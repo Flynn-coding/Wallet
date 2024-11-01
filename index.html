@@ -11,13 +11,12 @@
             margin: 0;
             padding: 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
             overflow: hidden;
+            height: 100vh;
         }
         h1 {
-            text-align: center;
             font-size: 3em;
             margin-bottom: 20px;
             opacity: 0;
@@ -34,7 +33,7 @@
             display: flex;
             flex-direction: column;
             width: 90%;
-            max-width: 500px;
+            max-width: 1200px;
             background: white;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -49,8 +48,12 @@
                 transform: translateY(0);
             }
         }
-        .login-section, .register-section {
+        .login-section, .register-section, .wallet-section, .crypto-prices-section {
             display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         .active {
             display: block;
@@ -98,10 +101,41 @@
             background-color: #007bff;
         }
         .crypto-prices {
+            display: flex;
+            flex-direction: column;
             margin-top: 20px;
+        }
+        .price {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin: 5px 0;
+            transition: transform 0.3s;
+        }
+        .price:hover {
+            transform: scale(1.02);
         }
         .wallet-section {
             display: none;
+        }
+        .wallet-list {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f1f1f1;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .wallet-input {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .wallet-info {
+            flex: 1;
+            text-align: left;
+            padding-left: 20px;
         }
     </style>
 </head>
@@ -122,16 +156,17 @@
             <button id="registerButton">Register</button>
             <button id="showLogin">Login</button>
         </div>
+        <div class="crypto-prices-section">
+            <h2>Current Crypto Prices</h2>
+            <div id="cryptoPrices" class="crypto-prices"></div>
+        </div>
         <div class="wallet-section">
-            <div class="nav">
-                <button id="viewWallets">View Wallets</button>
-                <button id="viewPrices">Crypto Prices</button>
+            <h2>Track Wallets</h2>
+            <div class="wallet-input">
+                <input type="text" id="walletAddress" placeholder="Enter wallet address">
+                <button id="addWallet">Add Wallet</button>
             </div>
-            <div id="wallet-list"></div>
-            <div class="crypto-prices">
-                <h2>Current Crypto Prices</h2>
-                <div id="prices"></div>
-            </div>
+            <div id="wallet-list" class="wallet-list"></div>
         </div>
     </div>
     <div id="notification"></div>
@@ -159,29 +194,30 @@
         });
 
         document.getElementById('loginButton').addEventListener('click', () => {
-            // Here, implement your login logic (for demonstration, we assume successful login)
+            // Simulated login
             loggedIn = true;
             document.querySelector('.login-section').classList.remove('active');
+            document.querySelector('.crypto-prices-section').style.display = 'block';
             document.querySelector('.wallet-section').style.display = 'block';
             loadPrices();
         });
 
         document.getElementById('registerButton').addEventListener('click', () => {
-            // Here, implement your registration logic (for demonstration, we assume successful registration)
+            // Simulated registration
             alert('Registration successful! Please log in.');
             document.querySelector('.register-section').classList.remove('active');
             document.querySelector('.login-section').classList.add('active');
         });
 
-        document.getElementById('viewWallets').addEventListener('click', () => {
-            if (loggedIn) {
+        document.getElementById('addWallet').addEventListener('click', () => {
+            const walletAddress = document.getElementById('walletAddress').value;
+            if (walletAddress) {
+                wallets.push(walletAddress);
                 loadWallets();
-            } else {
-                alert('Please log in to view wallets.');
+                document.getElementById('walletAddress').value = '';
+                showNotification('Wallet added successfully!');
             }
         });
-
-        document.getElementById('viewPrices').addEventListener('click', loadPrices);
 
         function loadWallets() {
             const walletList = document.getElementById('wallet-list');
@@ -191,20 +227,34 @@
                 div.className = 'wallet';
                 const status = Math.random() > 0.5 ? 'Buy' : 'Sell';
                 const statusClass = status === 'Buy' ? 'buy' : 'sell';
-                div.innerHTML = `${wallet} <span class="status ${statusClass}">${status}</span>`;
+                div.innerHTML = `<strong>${wallet}</strong> <span class="status ${statusClass}">${status}</span>`;
                 walletList.appendChild(div);
             });
         }
 
         function loadPrices() {
-            const pricesDiv = document.getElementById('prices');
+            const pricesDiv = document.getElementById('cryptoPrices');
             pricesDiv.innerHTML = '';
             for (const [crypto, price] of Object.entries(cryptoPrices)) {
                 const div = document.createElement('div');
-                div.innerHTML = `<strong>${crypto}:</strong> ${price}`;
+                div.className = 'price';
+                div.innerHTML = `<strong>${crypto}:</strong> <span class="live-price">${price}</span>`;
                 pricesDiv.appendChild(div);
+                animatePrice(div);
             }
             showNotification('Prices updated!');
+        }
+
+        function animatePrice(priceDiv) {
+            let currentPrice = parseInt(priceDiv.innerText.split('$')[1].replace(',', ''), 10);
+            let newPrice = currentPrice + (Math.random() > 0.5 ? Math.floor(Math.random() * 1000) : -Math.floor(Math.random() * 1000));
+            priceDiv.querySelector('.live-price').innerText = `$${newPrice.toLocaleString()}`;
+            priceDiv.style.transition = "transform 0.3s";
+            priceDiv.style.transform = "scale(1.05)";
+            setTimeout(() => {
+                priceDiv.style.transform = "scale(1)";
+            }, 300);
+            setTimeout(() => animatePrice(priceDiv), 5000); // Update price every 5 seconds
         }
 
         function showNotification(message) {
@@ -215,6 +265,12 @@
                 notification.style.display = 'none';
             }, 3000);
         }
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.crypto-prices-section').style.display = 'none';
+            document.querySelector('.wallet-section').style.display = 'none';
+        });
     </script>
 </body>
 </html>
