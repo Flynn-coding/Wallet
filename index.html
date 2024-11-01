@@ -18,8 +18,8 @@
         }
         h1 {
             text-align: center;
-            margin: 50px 0;
             font-size: 3em;
+            margin-bottom: 20px;
             opacity: 0;
             transform: translateY(-50px);
             animation: fadeIn 1s forwards 0.5s;
@@ -32,11 +32,13 @@
         }
         .container {
             display: flex;
+            flex-direction: column;
             width: 90%;
-            max-width: 1200px;
+            max-width: 500px;
             background: white;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
             animation: slideIn 0.5s forwards;
             opacity: 0;
             transform: translateY(20px);
@@ -47,13 +49,11 @@
                 transform: translateY(0);
             }
         }
-        .left-panel, .right-panel {
-            padding: 20px;
-            width: 50%;
-            transition: opacity 0.5s;
+        .login-section, .register-section {
+            display: none;
         }
-        .left-panel {
-            border-right: 2px solid #007bff;
+        .active {
+            display: block;
         }
         input, button {
             width: calc(100% - 20px);
@@ -78,85 +78,110 @@
         button:hover {
             background-color: #0056b3;
         }
-        #wallet-list {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .wallet {
-            background: #e9ecef;
+        #notification {
+            position: absolute;
+            top: 20px;
+            right: 20px;
             padding: 15px;
+            background-color: yellowgreen;
+            color: white;
             border-radius: 8px;
+            display: none;
+            animation: slideIn 0.5s forwards;
+        }
+        .nav {
+            margin: 20px 0;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            transition: transform 0.3s;
         }
-        .wallet:hover {
-            transform: scale(1.02);
+        .nav button {
+            background-color: #007bff;
         }
-        .status {
-            font-weight: bold;
-            padding: 5px;
-            border-radius: 5px;
-            color: white;
-            text-transform: uppercase;
+        .crypto-prices {
+            margin-top: 20px;
         }
-        .buy {
-            background-color: green;
-        }
-        .sell {
-            background-color: red;
-        }
-        .portfolio {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .portfolio h2 {
-            margin-bottom: 20px;
-        }
-        .portfolio img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            margin-top: 10px;
+        .wallet-section {
+            display: none;
         }
     </style>
 </head>
 <body>
     <h1>Trading.io</h1>
     <div class="container">
-        <div class="left-panel">
-            <h2>Add Wallet Addresses</h2>
-            <input type="text" id="walletAddress" placeholder="Enter wallet address" required>
-            <button id="addWallet">Add Wallet</button>
-            <div id="wallet-list"></div>
+        <div class="login-section active">
+            <h2>Login</h2>
+            <input type="text" id="loginEmail" placeholder="Email" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button id="loginButton">Login</button>
+            <button id="showRegister">Register</button>
         </div>
-        <div class="right-panel portfolio">
-            <h2>Your Portfolio</h2>
-            <p>Link your wallet to view your transactions and portfolio performance!</p>
-            <img src="https://via.placeholder.com/200" alt="Portfolio Illustration">
-            <p>Connect your wallet to start tracking!</p>
+        <div class="register-section">
+            <h2>Register</h2>
+            <input type="text" id="registerEmail" placeholder="Email" required>
+            <input type="password" id="registerPassword" placeholder="Password" required>
+            <button id="registerButton">Register</button>
+            <button id="showLogin">Login</button>
+        </div>
+        <div class="wallet-section">
+            <div class="nav">
+                <button id="viewWallets">View Wallets</button>
+                <button id="viewPrices">Crypto Prices</button>
+            </div>
+            <div id="wallet-list"></div>
+            <div class="crypto-prices">
+                <h2>Current Crypto Prices</h2>
+                <div id="prices"></div>
+            </div>
         </div>
     </div>
+    <div id="notification"></div>
 
     <script>
         let wallets = [];
+        let loggedIn = false;
 
-        document.getElementById('addWallet').addEventListener('click', () => {
-            const walletAddress = document.getElementById('walletAddress').value;
-            if (walletAddress && wallets.length < 5) {
-                wallets.push(walletAddress);
-                document.getElementById('walletAddress').value = ''; // Clear input
+        // Simulated data for prices
+        const cryptoPrices = {
+            Bitcoin: '$60,000',
+            Ethereum: '$4,000',
+            Solana: '$200',
+            Cardano: '$2',
+        };
+
+        document.getElementById('showRegister').addEventListener('click', () => {
+            document.querySelector('.login-section').classList.remove('active');
+            document.querySelector('.register-section').classList.add('active');
+        });
+
+        document.getElementById('showLogin').addEventListener('click', () => {
+            document.querySelector('.register-section').classList.remove('active');
+            document.querySelector('.login-section').classList.add('active');
+        });
+
+        document.getElementById('loginButton').addEventListener('click', () => {
+            // Here, implement your login logic (for demonstration, we assume successful login)
+            loggedIn = true;
+            document.querySelector('.login-section').classList.remove('active');
+            document.querySelector('.wallet-section').style.display = 'block';
+            loadPrices();
+        });
+
+        document.getElementById('registerButton').addEventListener('click', () => {
+            // Here, implement your registration logic (for demonstration, we assume successful registration)
+            alert('Registration successful! Please log in.');
+            document.querySelector('.register-section').classList.remove('active');
+            document.querySelector('.login-section').classList.add('active');
+        });
+
+        document.getElementById('viewWallets').addEventListener('click', () => {
+            if (loggedIn) {
                 loadWallets();
-            } else if (wallets.length >= 5) {
-                alert('Cannot add more than 5 wallets');
             } else {
-                alert('Please enter a valid wallet address');
+                alert('Please log in to view wallets.');
             }
         });
+
+        document.getElementById('viewPrices').addEventListener('click', loadPrices);
 
         function loadWallets() {
             const walletList = document.getElementById('wallet-list');
@@ -169,6 +194,26 @@
                 div.innerHTML = `${wallet} <span class="status ${statusClass}">${status}</span>`;
                 walletList.appendChild(div);
             });
+        }
+
+        function loadPrices() {
+            const pricesDiv = document.getElementById('prices');
+            pricesDiv.innerHTML = '';
+            for (const [crypto, price] of Object.entries(cryptoPrices)) {
+                const div = document.createElement('div');
+                div.innerHTML = `<strong>${crypto}:</strong> ${price}`;
+                pricesDiv.appendChild(div);
+            }
+            showNotification('Prices updated!');
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.innerText = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
         }
     </script>
 </body>
