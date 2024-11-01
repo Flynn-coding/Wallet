@@ -10,6 +10,10 @@
             background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
             margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             overflow: hidden;
         }
         h1 {
@@ -27,10 +31,10 @@
             }
         }
         .container {
-            max-width: 600px;
-            margin: 0 auto;
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
             background: white;
-            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             animation: slideIn 0.5s forwards;
@@ -42,6 +46,14 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+        .left-panel, .right-panel {
+            padding: 20px;
+            width: 50%;
+            transition: opacity 0.5s;
+        }
+        .left-panel {
+            border-right: 2px solid #007bff;
         }
         input, button {
             width: calc(100% - 20px);
@@ -97,15 +109,37 @@
         .sell {
             background-color: red;
         }
+        .portfolio {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .portfolio h2 {
+            margin-bottom: 20px;
+        }
+        .portfolio img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <h1>Trading.io</h1>
     <div class="container">
-        <h2>Add Wallet Addresses</h2>
-        <input type="text" id="walletAddress" placeholder="Enter wallet address" required>
-        <button id="addWallet">Add Wallet</button>
-        <div id="wallet-list"></div>
+        <div class="left-panel">
+            <h2>Add Wallet Addresses</h2>
+            <input type="text" id="walletAddress" placeholder="Enter wallet address" required>
+            <button id="addWallet">Add Wallet</button>
+            <div id="wallet-list"></div>
+        </div>
+        <div class="right-panel portfolio">
+            <h2>Your Portfolio</h2>
+            <p>Link your wallet to view your transactions and portfolio performance!</p>
+            <img src="https://via.placeholder.com/200" alt="Portfolio Illustration">
+            <p>Connect your wallet to start tracking!</p>
+        </div>
     </div>
 
     <script>
