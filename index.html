@@ -48,7 +48,7 @@
                 transform: translateY(0);
             }
         }
-        .login-section, .register-section, .wallet-section, .crypto-prices-section {
+        .login-section, .register-section, .wallet-section, .crypto-prices-section, .wallet-profile-section {
             display: none;
             margin-top: 20px;
             padding: 20px;
@@ -97,9 +97,6 @@
             display: flex;
             justify-content: space-between;
         }
-        .nav button {
-            background-color: #007bff;
-        }
         .crypto-prices {
             display: flex;
             flex-direction: column;
@@ -117,25 +114,32 @@
         .price:hover {
             transform: scale(1.02);
         }
-        .wallet-section {
-            display: none;
-        }
         .wallet-list {
+            display: flex;
+            flex-direction: column;
+            margin-top: 20px;
+        }
+        .wallet {
             display: flex;
             justify-content: space-between;
             padding: 10px;
             background: #f1f1f1;
             border-radius: 8px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .wallet:hover {
+            background: #e1e1e1;
+        }
+        .wallet-profile {
             margin-top: 20px;
         }
-        .wallet-input {
-            flex: 1;
-            margin-right: 10px;
-        }
-        .wallet-info {
-            flex: 1;
-            text-align: left;
-            padding-left: 20px;
+        .transaction {
+            margin: 5px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -168,6 +172,10 @@
             </div>
             <div id="wallet-list" class="wallet-list"></div>
         </div>
+        <div class="wallet-profile-section">
+            <h2>Wallet Profile</h2>
+            <div id="walletProfile" class="wallet-profile"></div>
+        </div>
     </div>
     <div id="notification"></div>
 
@@ -175,12 +183,24 @@
         let wallets = [];
         let loggedIn = false;
 
-        // Simulated data for prices
+        // Simulated data for prices and transactions
         const cryptoPrices = {
             Bitcoin: '$60,000',
             Ethereum: '$4,000',
             Solana: '$200',
             Cardano: '$2',
+        };
+
+        const simulatedTransactions = {
+            'wallet1': [
+                { type: 'Buy', amount: '1 BTC', time: '2024-11-01 12:30' },
+                { type: 'Sell', amount: '0.5 BTC', time: '2024-11-01 13:00' },
+            ],
+            'wallet2': [
+                { type: 'Buy', amount: '10 ETH', time: '2024-11-01 12:45' },
+                { type: 'Buy', amount: '5 ETH', time: '2024-11-01 13:15' },
+            ],
+            // Add more wallets and transactions as needed
         };
 
         document.getElementById('showRegister').addEventListener('click', () => {
@@ -226,34 +246,43 @@
                 const div = document.createElement('div');
                 div.className = 'wallet';
                 const status = Math.random() > 0.5 ? 'Buy' : 'Sell';
-                const statusClass = status === 'Buy' ? 'buy' : 'sell';
-                div.innerHTML = `<strong>${wallet}</strong> <span class="status ${statusClass}">${status}</span>`;
+                div.innerHTML = `<strong>${wallet}</strong> <span class="status">${status}</span>`;
+                div.addEventListener('click', () => showWalletProfile(wallet));
                 walletList.appendChild(div);
             });
         }
 
+        function showWalletProfile(wallet) {
+            const profileDiv = document.getElementById('walletProfile');
+            profileDiv.innerHTML = `<h3>Profile for ${wallet}</h3>`;
+            const transactions = simulatedTransactions[wallet] || [];
+            transactions.forEach(tx => {
+                const transactionDiv = document.createElement('div');
+                transactionDiv.className = 'transaction';
+                transactionDiv.innerHTML = `<strong>${tx.type}</strong>: ${tx.amount} at ${tx.time}`;
+                profileDiv.appendChild(transactionDiv);
+            });
+            document.querySelector('.wallet-profile-section').style.display = 'block';
+        }
+
         function loadPrices() {
             const pricesDiv = document.getElementById('cryptoPrices');
-            pricesDiv.innerHTML = '';
-            for (const [crypto, price] of Object.entries(cryptoPrices)) {
-                const div = document.createElement('div');
-                div.className = 'price';
-                div.innerHTML = `<strong>${crypto}:</strong> <span class="live-price">${price}</span>`;
-                pricesDiv.appendChild(div);
-                animatePrice(div);
+            for (const [coin, price] of Object.entries(cryptoPrices)) {
+                const priceDiv = document.createElement('div');
+                priceDiv.className = 'price';
+                priceDiv.innerHTML = `<strong>${coin}</strong> <span>${price}</span>`;
+                pricesDiv.appendChild(priceDiv);
             }
-            showNotification('Prices updated!');
+            document.querySelector('.crypto-prices-section').style.display = 'block';
+            animatePrice(pricesDiv);
         }
 
         function animatePrice(priceDiv) {
-            let currentPrice = parseInt(priceDiv.innerText.split('$')[1].replace(',', ''), 10);
-            let newPrice = currentPrice + (Math.random() > 0.5 ? Math.floor(Math.random() * 1000) : -Math.floor(Math.random() * 1000));
-            priceDiv.querySelector('.live-price').innerText = `$${newPrice.toLocaleString()}`;
-            priceDiv.style.transition = "transform 0.3s";
-            priceDiv.style.transform = "scale(1.05)";
-            setTimeout(() => {
-                priceDiv.style.transform = "scale(1)";
-            }, 300);
+            priceDiv.childNodes.forEach((child, index) => {
+                setTimeout(() => {
+                    child.classList.toggle('animate');
+                }, index * 1000);
+            });
             setTimeout(() => animatePrice(priceDiv), 5000); // Update price every 5 seconds
         }
 
@@ -270,6 +299,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('.crypto-prices-section').style.display = 'none';
             document.querySelector('.wallet-section').style.display = 'none';
+            document.querySelector('.wallet-profile-section').style.display = 'none';
         });
     </script>
 </body>
